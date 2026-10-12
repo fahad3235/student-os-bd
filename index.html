@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student OS BD — স্টুডেন্ট ওএস বিডি</title>
+<meta name="description" content="Student OS BD — a fully offline, bilingual (EN/বাংলা) student operating system: study planner, flashcards, focus timer, countdowns, notes, XP.">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true">🎓</span>
+    <span class="brand-name">Student OS <b>BD</b></span>
+  </div>
+  <div class="topbar-mid">
+    <input id="global-search" class="search" type="search"
+           data-i18n-ph="search_placeholder" placeholder="Search subjects, cards, notes…" autocomplete="off">
+  </div>
+  <div class="topbar-right">
+    <button id="xp-chip" class="xp-chip" title="XP / level">
+      <span class="xp-star" aria-hidden="true">⭐</span>
+      <span id="xp-text">0 XP · L1</span>
+    </button>
+    <button id="lang-toggle" class="btn ghost" aria-label="Language">বাং</button>
+    <button id="btn-export" class="btn ghost" data-i18n="export">Export</button>
+    <button id="btn-import" class="btn ghost" data-i18n="import">Import</button>
+  </div>
+</header>
+
+<div id="search-results" class="search-results hidden" role="dialog" aria-label="search results"></div>
+
+<nav class="tabs" id="tabs" aria-label="Modules">
+  <button class="tab active" data-tab="dashboard"><span class="tab-ico">🏠</span><span data-i18n="nav_dashboard">Dashboard</span></button>
+  <button class="tab" data-tab="planner"><span class="tab-ico">📚</span><span data-i18n="nav_planner">Planner</span></button>
+  <button class="tab" data-tab="flashcards"><span class="tab-ico">🃏</span><span data-i18n="nav_flashcards">Flashcards</span></button>
+  <button class="tab" data-tab="focus"><span class="tab-ico">⏱️</span><span data-i18n="nav_focus">Focus</span></button>
+  <button class="tab" data-tab="countdowns"><span class="tab-ico">⏳</span><span data-i18n="nav_countdowns">Countdowns</span></button>
+  <button class="tab" data-tab="notes"><span class="tab-ico">📝</span><span data-i18n="nav_notes">Notes</span></button>
+</nav>
+
+<main id="view" class="view">
+  <!-- DASHBOARD -->
+  <section id="tab-dashboard" class="panel">
+    <h2 data-i18n="dash_title">Today at a glance</h2>
+    <div class="cards-grid" id="dash-cards"></div>
+    <div class="dash-row">
+      <div class="card">
+        <h3 data-i18n="dash_focus_pick">🎯 Today's focus</h3>
+        <div id="dash-focus-pick"></div>
+      </div>
+      <div class="card">
+        <h3 data-i18n="dash_health">📊 Study health</h3>
+        <div id="dash-health"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PLANNER -->
+  <section id="tab-planner" class="panel hidden">
+    <div class="panel-head">
+      <h2 data-i18n="planner_title">Study planner</h2>
+      <button id="btn-add-subject" class="btn primary">＋ <span data-i18n="add_subject">Add subject</span></button>
+    </div>
+    <div id="subject-list"></div>
+    <div id="planner-empty" class="empty hidden">
+      <p data-i18n="planner_empty">No subjects yet. Add your first subject to start planning.</p>
+    </div>
+  </section>
+
+  <!-- FLASHCARDS -->
+  <section id="tab-flashcards" class="panel hidden">
+    <div class="panel-head">
+      <h2 data-i18n="decks_title">Flashcards</h2>
+      <button id="btn-add-deck" class="btn primary">＋ <span data-i18n="new_deck">New deck</span></button>
+    </div>
+    <div id="deck-list"></div>
+    <div id="decks-empty" class="empty hidden">
+      <p data-i18n="decks_empty">No decks yet. Create a deck and add cards to start spaced repetition.</p>
+    </div>
+    <div id="review-area" class="hidden"></div>
+  </section>
+
+  <!-- FOCUS -->
+  <section id="tab-focus" class="panel hidden">
+    <h2 data-i18n="focus_title">Focus timer</h2>
+    <div class="focus-grid">
+      <div class="card timer-card">
+        <div id="timer-phase" class="timer-phase" data-i18n="phase_ready">Ready</div>
+        <div id="timer-clock" class="timer-clock">25:00</div>
+        <div class="timer-controls">
+          <button id="timer-start" class="btn primary" data-i18n="start">Start</button>
+          <button id="timer-pause" class="btn hidden" data-i18n="pause">Pause</button>
+          <button id="timer-resume" class="btn primary hidden" data-i18n="resume">Resume</button>
+          <button id="timer-skip" class="btn ghost hidden" data-i18n="skip">Skip</button>
+          <button id="timer-reset" class="btn ghost" data-i18n="reset">Reset</button>
+        </div>
+        <div id="timer-xp-note" class="muted small"></div>
+      </div>
+      <div class="card">
+        <h3 data-i18n="focus_stats">Stats</h3>
+        <div id="focus-stats"></div>
+        <h3 data-i18n="focus_settings">Settings <span class="muted small">(min)</span></h3>
+        <div class="settings-row">
+          <label><span data-i18n="focus_len">Focus</span><input id="set-focus" type="number" min="1" max="180" value="25"></label>
+          <label><span data-i18n="short_len">Short break</span><input id="set-short" type="number" min="1" max="60" value="5"></label>
+          <label><span data-i18n="long_len">Long break</span><input id="set-long" type="number" min="1" max="90" value="15"></label>
+          <label><span data-i18n="cycle_len">Cycle</span><input id="set-cycle" type="number" min="2" max="12" value="4"></label>
+        </div>
+        <button id="btn-save-settings" class="btn" data-i18n="save">Save</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3 data-i18n="session_log">Session log</h3>
+      <div id="session-log"></div>
+    </div>
+  </section>
+
+  <!-- COUNTDOWNS -->
+  <section id="tab-countdowns" class="panel hidden">
+    <div class="panel-head">
+      <h2 data-i18n="cd_title">Exam countdown hub</h2>
+      <button id="btn-add-cd" class="btn primary">＋ <span data-i18n="new_countdown">New countdown</span></button>
+    </div>
+    <div id="cd-list" class="cards-grid"></div>
+    <div id="cd-empty" class="empty hidden">
+      <p data-i18n="cd_empty">No countdowns yet. Add one for your next exam or deadline.</p>
+    </div>
+  </section>
+
+  <!-- NOTES -->
+  <section id="tab-notes" class="panel hidden">
+    <div class="panel-head">
+      <h2 data-i18n="notes_title">Quick notes</h2>
+      <button id="btn-add-note" class="btn primary">＋ <span data-i18n="new_note">New note</span></button>
+    </div>
+    <input id="notes-search" class="search notes-search" type="search"
+           data-i18n-ph="search_notes" placeholder="Search notes…" autocomplete="off">
+    <div id="notes-list" class="cards-grid"></div>
+    <div id="notes-empty" class="empty hidden">
+      <p data-i18n="notes_empty">No notes yet. Jot down anything worth remembering.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <span data-i18n="footer_offline">100% offline · your data stays in this browser</span>
+  <button id="btn-clear" class="btn danger-text" data-i18n="clear_all">Clear all data</button>
+</footer>
+
+<div id="modal-root"></div>
+<input id="import-file" type="file" accept="application/json,.json" class="hidden">
+
+<script src="js/i18n.js"></script>
+<script src="js/store.js"></script>
+<script src="js/planner.js"></script>
+<script src="js/flashcards.js"></script>
+<script src="js/timer.js"></script>
+<script src="js/countdowns.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
